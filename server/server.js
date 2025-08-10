@@ -18,6 +18,12 @@ import { GOOGLE_AUTH_ROUTES_PREFIX, createGoogleAuthRoutes } from './routes/auth
 import { createProfileRouter } from './routes/profile.js';
 
 const app = express();
+// Trust the proxy/load balancer so req.ip comes from X-Forwarded-For
+// On Render/Heroku/most PaaS, use `true`. If you know it's exactly one hop, use `1`.
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', true);
+}
+
 const PORT = process.env.PORT || 3000;
 const FE_URL = process.env.FE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -82,7 +88,7 @@ app.post('/refresh-token', async (req, res) => {
         injectAccessTokens(user, res);
 
         res.json({ message: 'Tokens refreshed' });
-    } 
+    }
     catch (err) {
         console.error('Refresh token error:', err);
         res.status(401).json({ error: 'Invalid or expired refresh token' });
@@ -119,6 +125,8 @@ function generateVerificationToken(userId) {
 const signUpLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // Limit each IP to 5 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
     message: { error: 'Too many register attempts from this IP. Please try again later.' }
 });
 
@@ -153,6 +161,8 @@ app.post('/register', signUpLimiter, async (req, res) => {
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 30, // Limit each IP to 30 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
     message: { error: 'Too many login attempts from this IP. Please try again later.' }
 });
 
@@ -194,6 +204,8 @@ app.post('/verify', async (req, res) => {
 const forgotPasswordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 3, // Limit each IP to 5 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
     message: { error: 'Too many forgot passwords attempts from this IP. Please try again later.' }
 });
 
