@@ -28,7 +28,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import AuthButtons from '../components/AuthButtons.vue';
+import AuthButtons from '../../components/AuthButtons.vue';
+import { apiFetch } from '../../utils/apiFetch';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const email = ref('');
@@ -36,7 +37,7 @@ const password = ref('');
 const router = useRouter();
 
 async function login() {
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await apiFetch(`/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -10,7 +10,9 @@ import rateLimit from 'express-rate-limit';
 import 'dotenv/config';
 import validator from 'validator';
 import { v4 as uuidv4 } from 'uuid';
-import { getUserByEmail, getUserById, createUser, updateUserPassword, setUserIsVerified } from './db.js';
+import csurf from 'csurf';
+import helmet from 'helmet';
+import { getUserByEmail, getUserById, createUser, updateUserPassword, setUserIsVerified } from './database/dbUsers.js';
 import { injectAccessTokens, clearAccessTokens } from './utils/tokens.js';
 import { sendEmailVerification, sendPasswordResetEmail } from './services/emails.js';
 import { FACEBOOK_AUTH_ROUTES_PREFIX, createFacebookAuthRoutes } from './routes/auth_facebook.js';
@@ -20,10 +22,16 @@ import { createProfileRouter } from './routes/profile.js';
 const app = express();
 // Trust the proxy/load balancer so req.ip comes from X-Forwarded-For
 // On Render/Heroku/most PaaS, use `true`. If you know it's exactly one hop, use `1`.
+// before any middleware that reads req.ip (e.g., rate limiters)
 if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', true);
+    // Render: 1 hop (or 2 if Cloudflare sits in front)
+    app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || 1));
+} else {
+    // Local/dev
+    app.set('trust proxy', false);
 }
 
+const IS_PROD = process.env.NODE_ENV === 'production';
 const PORT = process.env.PORT || 3000;
 const FE_URL = process.env.FE_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -31,10 +39,28 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const EMAIL_SECRET = process.env.EMAIL_SECRET_ACTIVATION_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
+// ---------- Process-level safety nets (recommended) ----------
+process.on('unhandledRejection', (reason, p) => {
+    console.error('UNHANDLED REJECTION:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+app.disable('x-powered-by');
+
 // CORS config
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) {
+            if (process.env.NODE_ENV !== 'production') {
+                // console.debug('[CORS] No Origin header (likely same-origin or server-to-server).');
+            }
             return callback(null, false);
         }
 
@@ -45,22 +71,51 @@ app.use(cors({
             if (allowedOrigins.includes(parsedOrigin)) {
                 return callback(null, parsedOrigin);
             } else {
-                return callback(new Error('Not allowed by CORS'));
+                console.error(`[CORS] Blocked request from origin: ${parsedOrigin}. Allowed: ${allowedOrigins.join(', ')}`);
+                return callback(new Error(`CORS: Origin ${parsedOrigin} not allowed`));
             }
-        }
-        catch (err) {
-            return callback(new Error('Invalid origin'));
+        } catch (err) {
+            console.error(`[CORS] Invalid origin header: ${origin}`, err);
+            return callback(new Error('CORS: Invalid origin'));
         }
     },
     credentials: true
 }));
 
 // Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '200kb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '200kb' }));
 app.use(cookieParser());
 
-// Auth middleware
+// ======================================================================
+// Begin CSRF
+// ======================================================================
+const csrfMiddleware = csurf({
+    cookie: {
+        key: 'csrf',                            // cookie name
+        sameSite: IS_PROD ? 'None' : 'Lax',     // cross-site in prod
+        secure: IS_PROD,                        // requires HTTPS in prod
+        httpOnly: false,                        // FE must read or at least receive token
+    },
+});
+
+// Apply CSRF to browser routes; skip Stripe webhook (server→server)
+app.use((req, res, next) => {
+    if (req.path === '/api/billing/webhook') return next();
+    return csrfMiddleware(req, res, next);
+});
+
+// Endpoint the FE calls to get a fresh CSRF token
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
+// ======================================================================
+// End CSRF
+// ======================================================================
+
+// ======================================================================
+// Begin Auth JWT
+// ======================================================================
 function authenticateJWT(req, res, next) {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ error: 'Not authenticated' });
@@ -94,6 +149,9 @@ app.post('/refresh-token', async (req, res) => {
         res.status(401).json({ error: 'Invalid or expired refresh token' });
     }
 });
+// ======================================================================
+// End Auth JWT
+// ======================================================================
 
 // ======================================================================
 // Begin Local Auth
@@ -274,9 +332,18 @@ app.get('/me', authenticateJWT, (req, res) => {
     res.json({ user: req.user });
 });
 
+// Profiles
 app.use('/api/profile', createProfileRouter(authenticateJWT));
 
 // Test route
 app.get('/', (req, res) => res.send('Auth server is running!'));
+
+// CSRF errors → 403
+app.use((err, req, res, next) => {
+    if (err && err.code === 'EBADCSRFTOKEN') {
+        return res.status(403).json({ error: 'Invalid CSRF token' });
+    }
+    return next(err);
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

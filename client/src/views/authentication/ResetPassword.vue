@@ -22,6 +22,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { apiFetch } from '../../utils/apiFetch';
 
 const password = ref('');
 const confirmPassword = ref('');
@@ -37,7 +38,7 @@ async function resetPassword() {
         return;
     }
 
-    const res = await fetch(`${API_URL}/reset-password`, {
+    const res = await apiFetch(`/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

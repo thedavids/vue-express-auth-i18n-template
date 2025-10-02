@@ -1,5 +1,4 @@
 <script setup>
-import UserPanel from '../components/UserPanel.vue';
 </script>
 
 <style scoped>
@@ -18,5 +17,4 @@ p {
     <h1>{{ $t('product_title') }}</h1>
     <p>{{ $t('product_description1') }}</p>
     <p>{{ $t('product_description2') }}</p>
-    <UserPanel />
 </template>

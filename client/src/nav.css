@@ -1,0 +1,149 @@
+/* src/styles/nav.css
+   Shared navbar & dropdown styles. Safe to import globally.
+   - Navbar-only visuals remain under `.navbar`
+   - Teleported dropdowns use global `.dropdown-menu` / `.nav-portal-menu`
+*/
+
+/* ============================= */
+/* Navbar container & controls   */
+/* ============================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 5px solid var(--nav-border);
+    box-shadow: var(--nav-shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--nav-bg);
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Brand / logo */
+.navbar .logo {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* Right-side links cluster */
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Buttons (navbar) */
+.navbar .btn {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--nav-btn-border);
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background: var(--nav-btn-bg);
+    color: var(--nav-btn-text);
+}
+
+.navbar .btn:hover {
+    background-color: var(--nav-btn-hover-bg);
+}
+
+.navbar .btn-avatar {
+    padding: 4.07px 8.67px;
+}
+
+/* keep your sizing */
+
+/* Icon with red dot (e.g., 💬 🔔) */
+.navbar .btn.icon.has-dot {
+    position: relative;
+}
+
+.navbar .dot {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px var(--nav-btn-bg, #fff);
+    /* halo for contrast */
+}
+
+/* Button anchor wrapper (kept relative for potential non-teleported fallback) */
+.navbar .dropdown {
+    position: relative;
+}
+
+/* ============================= */
+/* Global dropdown styles        */
+/* (used by teleported panels)   */
+/* ============================= */
+
+/* Base dropdown panel (works inside or outside navbar scope) */
+.dropdown-menu {
+    position: absolute;
+    /* overridden to fixed via inline style when teleported */
+    right: 0;
+    top: 110%;
+    border: 2px solid var(--dropdown-border);
+    border-radius: 6px;
+    box-shadow: var(--dropdown-shadow);
+    width: 240px;
+    /* default; components may override via inline style */
+    background: var(--dropdown-bg);
+    color: var(--text);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 10;
+}
+
+/* Teleported menus get reliable stacking + fixed positioning */
+.nav-portal-menu {
+    position: fixed;
+    /* exact top/left provided inline */
+    z-index: 2000;
+    /* above sticky navbar (1000) */
+}
+
+/* Shared dropdown items */
+.dropdown-item,
+.dropdown-item-100 {
+    display: block;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    font: inherit;
+    line-height: normal;
+    background: transparent;
+}
+
+.dropdown-item:hover,
+.dropdown-item-100:hover {
+    background-color: var(--dropdown-hover-bg);
+}
+
+.dropdown-item-100 {
+    width: 100%;
+}
+
+/* Small badge (global so it works inside teleported panels too) */
+.badge {
+    display: inline-block;
+    min-width: 1.25em;
+    padding: 0 0.4em;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.4em;
+    text-align: center;
+    background: var(--badge-bg, #ef4444);
+    color: var (--text);
+    margin-left: 6px;
+}

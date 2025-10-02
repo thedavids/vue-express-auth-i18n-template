@@ -23,6 +23,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { apiFetch } from '../../utils/apiFetch';
 
 const email = ref('');
 const message = ref('');
@@ -34,7 +35,7 @@ async function sendReset() {
 
     loading.value = true;
     try {
-        const res = await fetch(`${API_URL}/forgot-password`, {
+        const res = await apiFetch(`/forgot-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

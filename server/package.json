@@ -1,28 +1,37 @@
 {
-  "name": "need-help-server",
-  "version": "1.0.0",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
-    "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^3.3.2",
-    "passport": "^0.7.0",
-    "passport-facebook": "^3.0.0",
-    "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0",
-    "pg": "^8.16.3",
-    "resend": "^6.0.0",
-    "uuid": "^11.1.0",
-    "validator": "^13.15.15"
-  }
+    "name": "template-server",
+    "version": "1.0.0",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.864.0",
+        "bcrypt": "^6.0.0",
+        "body-parser": "^2.2.0",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "crypto": "^1.0.1",
+        "csurf": "^1.11.0",
+        "dotenv": "^17.2.1",
+        "express": "^5.1.0",
+        "express-rate-limit": "^8.0.1",
+        "helmet": "^8.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "multer": "^2.0.2",
+        "node-fetch": "^3.3.2",
+        "opossum": "^9.0.0",
+        "passport": "^0.7.0",
+        "passport-facebook": "^3.0.0",
+        "passport-google-oauth20": "^2.0.0",
+        "passport-local": "^1.0.0",
+        "pg": "^8.16.3",
+        "resend": "^6.0.0",
+        "sharp": "^0.34.3",
+        "stripe": "^18.4.0",
+        "tslib": "^2.8.1",
+        "uuid": "^11.1.0",
+        "validator": "^13.15.15"
+    }
 }

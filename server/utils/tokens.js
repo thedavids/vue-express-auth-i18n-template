@@ -42,7 +42,8 @@ export function generateToken(user) {
         {
             id: user.id,
             email: user.email,
-            displayName: user.displayName
+            displayName: user.displayName,
+            avatarUrl: user.avatar_url
         },
         JWT_SECRET,
         { expiresIn: JWT_MAX_AGE }

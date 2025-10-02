@@ -33,7 +33,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import AuthButtons from '../components/AuthButtons.vue';
+import AuthButtons from '../../components/AuthButtons.vue';
+import { apiFetch } from '../../utils/apiFetch';
 
 const email = ref('');
 const displayName = ref('');
@@ -50,7 +51,7 @@ async function register() {
 
     loading.value = true;
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/register`, {
+        const res = await apiFetch(`/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

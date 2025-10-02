@@ -8,6 +8,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { apiFetch } from '../../utils/apiFetch';
 
 const route = useRoute();
 const router = useRouter();
@@ -22,7 +23,7 @@ onMounted(async () => {
     }
 
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/verify`, {
+        const res = await apiFetch(`/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

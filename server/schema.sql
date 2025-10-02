@@ -11,9 +11,17 @@ CREATE TABLE "public"."User" (
     "facebookId" varchar(255),
     "isVerified" bool DEFAULT false,
     "createdAt" timestamptz DEFAULT now(),
-    "location" geography, -- Requires PostGIS
+    "location" geography,
     "search_radius_m" int4,
     "base_address" text,
+    "avatar_url" text,
+    "avatar_key" text,
+    "avatar_updated_at" timestamptz,
+    "notifyUponRequestCreation" bool NOT NULL DEFAULT false,
+    "account_tier" "public"."account_tier" NOT NULL DEFAULT 'free'::account_tier,
+    "role" "public"."user_role" NOT NULL DEFAULT 'user'::user_role,
+    "stripe_customer_id" text,
+    "notifyUponRequestCreationByEmail" bool NOT NULL DEFAULT false,
     PRIMARY KEY ("id")
 );
 
@@ -22,3 +30,4 @@ CREATE UNIQUE INDEX "User_email_key" ON public."User" USING btree (email);
 CREATE UNIQUE INDEX "User_googleId_key" ON public."User" USING btree ("googleId");
 CREATE UNIQUE INDEX "User_facebookId_key" ON public."User" USING btree ("facebookId");
 CREATE INDEX users_location_gix ON public."User" USING gist (location);
+CREATE INDEX users_location_notify_gix ON public."User" USING gist (location) WHERE (("notifyUponRequestCreation" = true) AND (search_radius_m IS NOT NULL));
