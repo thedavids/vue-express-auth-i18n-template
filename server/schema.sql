@@ -18,8 +18,6 @@ CREATE TABLE "public"."User" (
     "avatar_key" text,
     "avatar_updated_at" timestamptz,
     "notifyUponRequestCreation" bool NOT NULL DEFAULT false,
-    "account_tier" "public"."account_tier" NOT NULL DEFAULT 'free'::account_tier,
-    "role" "public"."user_role" NOT NULL DEFAULT 'user'::user_role,
     "stripe_customer_id" text,
     "notifyUponRequestCreationByEmail" bool NOT NULL DEFAULT false,
     PRIMARY KEY ("id")
